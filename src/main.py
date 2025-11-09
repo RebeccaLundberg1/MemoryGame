@@ -1,4 +1,5 @@
 from game.memory_game import Memory_game
+import time
 
 def main():
     while True:
@@ -45,10 +46,27 @@ def start_new_game():
 
 def run_game(game:Memory_game):
     while not game.is_finished():
+        print(f"Choose a card to flip")
         game.print_board()
-        row = int(input("Enter row for card to flip: > ")) -1
-        col = int(input("Enter row for card to flip: > ")) -1
-        game.flip(row, col)
+        row = int(input("Enter row: > ")) -1
+        col = int(input("Enter column: > ")) -1
+        game.try_flip((row, col))
+        if game.flipps_in_round < 2:
+            continue
+        
+        game.print_board()
+        if game.try_match():
+            print("It's a match!")
+        else:
+            print("Sorry, not a match!")
+
+        game.set_next_round()
+        
+        print("-" * 30)
+        print(f"Attempts: {game.nbr_of_flipps}")
+        print(f"Found pairs: {game.nbr_of_matches}")
+        print("-" * 30)        
+
         
 
 if __name__ == "__main__":
