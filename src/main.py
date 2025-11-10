@@ -3,6 +3,7 @@ import time
 from game.game_board import CardAlreadyFlippedError
 from game.game_board import CardAlreadyMatchedError
 from game.game_board import PositionIsIncorrect
+from game.memory_game import NotAbleToMatchError
 
 def main():
     while True:
@@ -50,23 +51,31 @@ def start_new_game():
 def run_game(game:Memory_game):
     while not game.is_finished():
         lable = "first" if game.flipps_in_round == 0 else "second"
+        print()
         print(f"Please flip your {lable} card.")
         game.print_board()
         card_position = choose_position()
 
         try:
             game.try_flip(card_position)
-        except (CardAlreadyMatchedError, CardAlreadyFlippedError, PositionIsIncorrect) as e:
+        except (PositionIsIncorrect,
+                CardAlreadyMatchedError, 
+                CardAlreadyFlippedError
+                ) as e:
             print(f"Error: {e}")
 
         if game.flipps_in_round < 2:
             continue
         
+        print()
         game.print_board()
-        if game.try_match():
-            print("It's a match!")
-        else:
-            print("Sorry, not a match!")
+        try:
+            if game.try_match():
+                print("It's a match!")
+            else:
+                print("Sorry, not a match!")
+        except NotAbleToMatchError as e:
+            print(f"Error: {e}")
 
         game.set_next_round()
         
@@ -75,7 +84,9 @@ def run_game(game:Memory_game):
         print(f"Found pairs: {game.nbr_of_matches}")
         print("-" * 30)        
 
-        time.sleep(2.0) #Kanske fler sleeps genom spelet för läsbarheten? 
+        time.sleep(2.0)
+
+    game.print_summery()
         
 def choose_position():
     """Ask user for column and row and validate input"""
@@ -83,13 +94,13 @@ def choose_position():
         try:
             col = int(input("Enter column: > ")) -1
             row = int(input("Enter row: > ")) -1
-            if col < 0 and row < 0:
-               print("Column and row needs to be positive integers")
-               continue
-            return (row, col)
         except ValueError:
             print("Column and row needs to be positive integers")
             continue
+
+        return (row, col)
+
+
 
 if __name__ == "__main__":
     main()
