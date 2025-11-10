@@ -1,11 +1,20 @@
 from .card import Card
 import random
 
+class CardAlreadyFlippedError(Exception):
+    pass
+
+class CardAlreadyMatchedError(Exception):
+    pass
+
+class PositionIsIncorrect(Exception):
+    pass
+
 class Game_board:
     def __init__(self, size:tuple):
         self.rows, self.columns = size
         self.board = [[None for _ in range(self.columns)] for _ in range(self.rows)]
-        self.flipped_cards = []
+        self.flipped_cards = [] #Till en kölista? så man lägger till och tar bort en för att bara spara två samtidigt?
         self.setup_board()
 
     def setup_board(self):
@@ -51,18 +60,33 @@ class Game_board:
         return True
 
     def flip_card(self, card_postion:tuple):
+        """ first verify that card that is flipping is a valid card to flip 
+            (not already matched or flipped), then flip card and return True """
+        if not self.is_position_valid(card_postion):
+            raise PositionIsIncorrect("You entered a position outside the board")
+        
         if self.is_card_already_matched(card_postion):
-            return False #kan inte vända ett kort som redan är matchat 
+            raise CardAlreadyMatchedError("Can't choose a card that is already matched")
         
         if self.is_card_already_flipped(card_postion):
-            return False #kan inte vända ett kort som redan är vänt 
+            raise CardAlreadyFlippedError("Can't choose a card that is already flipped") 
         
         row, column = card_postion
         self.board[row][column].flip_card()
         self.flipped_cards.append(card_postion)
         return True
+    
+    def is_position_valid(self, card_postion:tuple):
+        """Check if position is on the board, """
+        row, col = card_postion
+        if row < 0 or row >= self.rows:
+            return False
+        elif col < 0 or col >= self.columns:
+            return False
+        return True
 
     def is_card_already_matched(self, card_postion:tuple):
+        """Check if card in position is already matched"""
         row, col = card_postion
         return self.board[row][col].is_matched
     
@@ -72,11 +96,14 @@ class Game_board:
         return self.board[row][col].is_flipped
     
     def set_cards_to_not_flipped(self):
+        """Iterate through board and sets all cards to: is_flipped = False"""
         for row in self.board:
             for card in row:
                 card.is_flipped = False
     
     def check_match(self):
+        """ Takes the two latest saved card positions in self.flipped_cards[]
+            to see if the id is equal. If equal, then it is a match."""
         row1, col1 = self.flipped_cards[-2]
         row2, col2 = self.flipped_cards[-1]
         

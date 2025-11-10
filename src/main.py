@@ -1,5 +1,8 @@
 from game.memory_game import Memory_game
 import time
+from game.game_board import CardAlreadyFlippedError
+from game.game_board import CardAlreadyMatchedError
+from game.game_board import PositionIsIncorrect
 
 def main():
     while True:
@@ -46,11 +49,16 @@ def start_new_game():
 
 def run_game(game:Memory_game):
     while not game.is_finished():
-        print(f"Choose a card to flip")
+        lable = "first" if game.flipps_in_round == 0 else "second"
+        print(f"Please flip your {lable} card.")
         game.print_board()
-        row = int(input("Enter row: > ")) -1
-        col = int(input("Enter column: > ")) -1
-        game.try_flip((row, col))
+        card_position = choose_position()
+
+        try:
+            game.try_flip(card_position)
+        except (CardAlreadyMatchedError, CardAlreadyFlippedError, PositionIsIncorrect) as e:
+            print(f"Error: {e}")
+
         if game.flipps_in_round < 2:
             continue
         
@@ -67,7 +75,21 @@ def run_game(game:Memory_game):
         print(f"Found pairs: {game.nbr_of_matches}")
         print("-" * 30)        
 
+        time.sleep(2.0) #Kanske fler sleeps genom spelet för läsbarheten? 
         
+def choose_position():
+    """Ask user for column and row and validate input"""
+    while True:
+        try:
+            col = int(input("Enter column: > ")) -1
+            row = int(input("Enter row: > ")) -1
+            if col < 0 and row < 0:
+               print("Column and row needs to be positive integers")
+               continue
+            return (row, col)
+        except ValueError:
+            print("Column and row needs to be positive integers")
+            continue
 
 if __name__ == "__main__":
     main()

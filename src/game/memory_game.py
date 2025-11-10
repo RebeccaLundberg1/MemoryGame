@@ -10,11 +10,8 @@ class Memory_game:
         self.flipps_in_round = 0
 
     def is_finished(self):
-        if self.game.all_cards_matched():
-            return True
-        else:
-            return False
-    
+        return self.game.all_cards_matched()
+
     def print_board(self):
         self.game.print_board()
 
