@@ -35,7 +35,7 @@ def main():
                 toplist = load_toplist()
                 for key in toplist:
                     print(f"{key}: ")
-                    for i, (flipps, player) in enumerate(sorted(toplist[key], reverse=True), start = 1):
+                    for i, (flipps, player) in enumerate(sorted(toplist[key], reverse=False), start = 1):
                         print(f"{i}. {player} - {flipps} attempts")
                     print()
 
