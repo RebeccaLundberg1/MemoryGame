@@ -1,3 +1,4 @@
+import heapq
 from game.memory_game import Memory_game
 import time
 from game.player import Player
@@ -10,13 +11,16 @@ def main():
         print(
             "1. Start new game\n"
             "2. Open latest game\n"
+            "3. Print high scoore for one player\n"
             "Q. Exit"
         )
         choice = input("> ").strip().upper()
         match choice:
             case "1":
                 start_new_game()
+
             case "2":
+                #Ska detta ske i egen fil, file_service?
                 if os.path.exists("savegame.json"):
                     with open("savegame.json", "r") as f:
                         data = json.load(f)
@@ -26,9 +30,19 @@ def main():
                 game = Memory_game(data["size"])
                 game.update_latest_game(data)
                 run_game(game) 
+
+            case "3":
+                toplist = load_toplist()
+                for key in toplist:
+                    print(f"{key}: ")
+                    for i, (flipps, player) in enumerate(sorted(toplist[key], reverse=True), start = 1):
+                        print(f"{i}. {player} - {flipps} attempts")
+                    print()
+
             case "Q":
                 print("Game exit")
                 break
+
             case _:
                 print(f"{choice} is invalid")
                 continue
@@ -112,13 +126,60 @@ def run_game(game:Memory_game):
         clear_screen()
 
     if game.is_finished():
+        if len(game.players) == 1:
+            update_toplist(game)
+            # Spara till topplista per spelbräde?
+            # Spara resultat? Om en spelare till någon topplista? Om flera spelare, inte spara alls om spelet är slut?
         game.print_summary()
-        # Spara resultat? Om en spelare till någon topplista? Om flera spelare, inte spara alls om spelet är slut?
     else:
+        # spara med file_service?
         with open("savegame.json", "w") as f:
             json.dump(game.to_dict(), f, indent=4)
         print("The game is saved, welcome back!")
         
+def update_toplist(game):
+    toplist = load_toplist()
+
+    nbr_of_flipps = game.players[0].nbr_of_flipps
+    player_name = game.players[0].name
+    match game.size:
+        case (2, 3):
+            level = "easy"
+        case (3, 4):
+            level = "medium"            
+        case (4, 5):
+            level = "hard"
+        case (5, 6):
+            level = "extreme"
+
+    min_heap = toplist[level]
+    heapq.heapify(min_heap)
+
+    if len(min_heap) < 3:
+        heapq.heappush(min_heap, (nbr_of_flipps, player_name))
+    else:
+        if nbr_of_flipps > min_heap[0][0]:
+            heapq.heappop(min_heap)
+            heapq.heappush(min_heap, (nbr_of_flipps, player_name))
+    
+    toplist[level] = min_heap
+    save_toplist(toplist)
+
+def save_toplist(toplists):
+    with open("toplist.json", "w") as f:
+        json.dump(toplists, f, indent=4)
+
+def load_toplist():
+    if os.path.exists("toplist.json"):
+        with open("toplist.json", "r") as f:
+            data = json.load(f)
+        for key in data:
+            data[key] = [tuple(item) for item in data[key]]
+        return data
+    else:
+        return {"easy": [], "medium": [], "hard": [], "extreme": []}
+        
+
 def add_players():
     while True:
         try:
