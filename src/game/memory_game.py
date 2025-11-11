@@ -1,15 +1,28 @@
 from .game_board import Game_board
+from .exceptions import NotAbleToMatchError
 from .player import Player
 
-def NotAbleToMatchError(Exception):
-    pass
-
 class Memory_game:
-    def __init__(self, players:list[Player], size:tuple):
+    def __init__(self, size:tuple, players:list[Player] = None):
+        if players == None:
+            players = []
         self.players = players
-        self.current_player = 0
+        self.size = size
         self.game = Game_board(size)
+        self.current_player = 0
         self.flipps_in_round = 0
+
+    def update_latest_game(self, dict):
+        for p in dict["players"]:
+            player = Player(p["name"])
+            player.nbr_of_matches = p["nbr_of_matches"]
+            player.nbr_of_flipps = p["nbr_of_flipps"]
+            self.players.append(player)
+        
+        self.game.update_board(dict["board"])
+
+        self.current_player = dict["current_player"]
+        self.flipps_in_round = dict["flipps_in_round"]
 
     def is_finished(self):
         return self.game.all_cards_matched()
@@ -60,3 +73,12 @@ class Memory_game:
 
     def print_board(self):
         self.game.print_board()
+
+    def to_dict(self):
+        return {
+            "size" : self.size,
+            "players": [p.to_dict() for p in self.players],
+            "board": self.game.to_list(),
+            "current_player": self.current_player,
+            "flipps_in_round": self.flipps_in_round
+        }

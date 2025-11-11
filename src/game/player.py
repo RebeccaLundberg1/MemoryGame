@@ -9,3 +9,8 @@ class Player:
 
     def add_flip(self):
         self.nbr_of_flipps += 1
+
+    def to_dict(self):
+        return {"name": self.name,
+                "nbr_of_matches": self.nbr_of_matches, 
+                "nbr_of_flipps": self.nbr_of_flipps}

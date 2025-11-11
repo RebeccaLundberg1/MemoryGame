@@ -1,21 +1,31 @@
 from game.memory_game import Memory_game
 import time
 from game.player import Player
-from game.game_board import CardAlreadyFlippedError
-from game.game_board import CardAlreadyMatchedError
-from game.game_board import PositionIsIncorrect
-from game.memory_game import NotAbleToMatchError
+from game.exceptions import GameError, NotAbleToMatchError
+import os
+import json
 
 def main():
     while True:
         print(
             "1. Start new game\n"
+            "2. Open latest game\n"
             "Q. Exit"
         )
         choice = input("> ").strip().upper()
         match choice:
             case "1":
                 start_new_game()
+            case "2":
+                if os.path.exists("savegame.json"):
+                    with open("savegame.json", "r") as f:
+                        data = json.load(f)
+                else:
+                    print("Ingen sparad fil hittades.")
+                    continue
+                game = Memory_game(data["size"])
+                game.update_latest_game(data)
+                run_game(game) 
             case "Q":
                 print("Game exit")
                 break
@@ -27,6 +37,7 @@ def start_new_game():
     players = add_players()
 
     while True:
+        print()
         choice = input(
                 "Size of board:\n" 
                 "1. 2x3(easy)\n" 
@@ -51,25 +62,28 @@ def start_new_game():
                 print("Invalid value, choose between 1-4")
                 continue
         
-    game = Memory_game(players, size)
+    game = Memory_game(size, players)
     run_game(game)
 
 def run_game(game:Memory_game):
+    clear_screen()
     while not game.is_finished():
         lable = "first" if game.flipps_in_round == 0 else "second"
         player = game.players[game.current_player]
         print()
-        print(f"{player.name}, pleace flip your {lable} card.")
+        print(f"{player.name}, pleace flip your {lable} card. (Select column 0, and row 0 to save and exit game)")
         game.print_board()
         card_position = choose_position()
 
+        if card_position == (-1, -1):
+            break
+        
         try:
             game.try_flip(card_position)
-        except (PositionIsIncorrect,
-                CardAlreadyMatchedError, 
-                CardAlreadyFlippedError
-                ) as e:
+        except (GameError) as e:
             print(f"Error: {e}")
+
+        clear_screen() 
 
         if game.flipps_in_round < 2:
             continue
@@ -94,9 +108,16 @@ def run_game(game:Memory_game):
             print(f"{player.name}: {player.nbr_of_matches} pairs right now")
         print("-" * 30)        
 
-        time.sleep(2.0)
+        time.sleep(3.0)
+        clear_screen()
 
-    game.print_summary()
+    if game.is_finished():
+        game.print_summary()
+        # Spara resultat? Om en spelare till någon topplista? Om flera spelare, inte spara alls om spelet är slut?
+    else:
+        with open("savegame.json", "w") as f:
+            json.dump(game.to_dict(), f, indent=4)
+        print("The game is saved, welcome back!")
         
 def add_players():
     while True:
@@ -117,17 +138,19 @@ def add_players():
             return players
 
 def choose_position():
-    """Ask user for column and row and validate input"""
+    """Ask user for column and row"""
     while True:
         try:
             col = int(input("Enter column: > ")) -1
-            row = int(input("Enter row: > ")) -1
+            row = int(input("Enter row: > ")) -1               
         except ValueError:
             print("Column and row needs to be positive integers")
             continue
 
         return (row, col)
-
+    
+def clear_screen():
+    os.system('cls' if os.name == 'nt' else 'clear')
 
 
 if __name__ == "__main__":

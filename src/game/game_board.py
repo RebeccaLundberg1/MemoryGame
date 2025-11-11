@@ -1,14 +1,6 @@
 from .card import Card
+from .exceptions import PositionIsIncorrect, CardAlreadyFlippedError, CardAlreadyMatchedError
 import random
-
-class CardAlreadyFlippedError(Exception):
-    pass
-
-class CardAlreadyMatchedError(Exception):
-    pass
-
-class PositionIsIncorrect(Exception):
-    pass
 
 class Game_board:
     def __init__(self, size:tuple):
@@ -33,6 +25,15 @@ class Game_board:
             for column in range(self.columns):
                 self.board[row][column] = cards[index]
                 index += 1
+
+    def update_board(self, latest_board_status):
+        for r in range(self.rows):
+            for c in range(self.columns):
+                card_status = latest_board_status[r][c]
+                self.board[r][c].id = card_status["id"]
+                self.board[r][c].image = card_status["image"]
+                self.board[r][c].is_matched = card_status["matched"]
+                self.board[r][c].is_flipped = card_status["flipped"]
         
     def print_board(self):
         """ Prints the board with a top and left row/colmun with index numbers for
@@ -118,3 +119,12 @@ class Game_board:
 
     def set_card_to_is_matched(self, card:Card):
         card.is_matched = True
+
+    def to_list(self):
+        return [
+                [{"id": card.id, 
+                  "image": card.image, 
+                  "matched": card.is_matched, 
+                  "flipped": card.is_flipped} 
+                for card in row] 
+               for row in self.board]
