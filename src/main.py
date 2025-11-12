@@ -1,5 +1,5 @@
 import heapq
-from game.memory_game import Memory_game
+from game.memoryGame import MemoryGame
 import time
 from game.player import Player
 from game.exceptions import GameError, NotAbleToMatchError
@@ -27,7 +27,7 @@ def main():
                 else:
                     print("Ingen sparad fil hittades.")
                     continue
-                game = Memory_game(data["size"])
+                game = MemoryGame(data["size"])
                 game.update_latest_game(data)
                 run_game(game) 
 
@@ -76,10 +76,10 @@ def start_new_game():
                 print("Invalid value, choose between 1-4")
                 continue
         
-    game = Memory_game(size, players)
+    game = MemoryGame(size, players)
     run_game(game)
 
-def run_game(game:Memory_game):
+def run_game(game:MemoryGame):
     clear_screen()
     while not game.is_finished():
         lable = "first" if game.flipps_in_round == 0 else "second"
@@ -158,7 +158,7 @@ def update_toplist(game):
     if len(min_heap) < 3:
         heapq.heappush(min_heap, (nbr_of_flipps, player_name))
     else:
-        if nbr_of_flipps > min_heap[0][0]:
+        if nbr_of_flipps < min_heap[0][0]:
             heapq.heappop(min_heap)
             heapq.heappush(min_heap, (nbr_of_flipps, player_name))
     

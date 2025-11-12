@@ -1,14 +1,14 @@
-from .game_board import Game_board
+from .gameBoard import GameBoard
 from .exceptions import NotAbleToMatchError
 from .player import Player
 
-class Memory_game:
+class MemoryGame:
     def __init__(self, size:tuple, players:list[Player] = None):
         if players == None:
-            players = []
+            players = [] #Att direkt skicka in en tom lista av players ska inte fungera. Kanske också om player är None så ska en automatiskt uppdatering av föregående spel ske? 
         self.players = players
         self.size = size
-        self.game = Game_board(size)
+        self.game = GameBoard(size)
         self.current_player = 0
         self.flipps_in_round = 0
 

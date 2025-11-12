@@ -2,7 +2,7 @@ from .card import Card
 from .exceptions import PositionIsIncorrect, CardAlreadyFlippedError, CardAlreadyMatchedError
 import random
 
-class Game_board:
+class GameBoard:
     def __init__(self, size:tuple):
         self.rows, self.columns = size
         self.board = [[None for _ in range(self.columns)] for _ in range(self.rows)]
@@ -13,7 +13,7 @@ class Game_board:
         """create list of cards, shuffle cards and add them to board"""
         cards = []
         cards_dubblets = []
-        image = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O"] #Detta borde kanske vara en lista av bilder någon annanstans som importeras? 
+        image = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O"] #Detta borde kanske vara en lista av bilder någon annanstans som importeras, och kanske att det ska vara längre? 
         for i in range((self.rows * self.columns) // 2):
             cards.append(Card(i, image[i]))
             cards_dubblets.append(Card(i, image[i]))
@@ -103,7 +103,7 @@ class Game_board:
                 card.is_flipped = False
     
     def check_match(self):
-        """ Takes the two latest saved card positions in self.flipped_cards[]
+        """ Takes the two latest saved card positions in flipped_cards[]
             to see if the id is equal. If equal, then it is a match."""
         row1, col1 = self.flipped_cards[-2]
         row2, col2 = self.flipped_cards[-1]
