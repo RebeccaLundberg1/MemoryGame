@@ -120,7 +120,7 @@ class MemoryGame:
         Return all necessary game information about a game as a dictionary.
 
         Returns: 
-            dict: all data required to save the game state to JSON.
+            dict:  all data required to later restore the game state from JSON.
         """
         return {
             "size" : self.size,

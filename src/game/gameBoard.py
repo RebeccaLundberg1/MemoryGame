@@ -18,7 +18,7 @@ class GameBoard:
         """
         cards = []
         cards_dubblets = []
-        image = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O"] #Detta borde kanske vara en lista av bilder någon annanstans som importeras, och kanske att det ska vara längre? 
+        image = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O"] #Emojis? Detta borde kanske vara en lista av bilder någon annanstans som importeras, och kanske att det ska vara längre? 
         for i in range((self.rows * self.columns) // 2):
             cards.append(Card(i, image[i]))
             cards_dubblets.append(Card(i, image[i]))
@@ -112,7 +112,7 @@ class GameBoard:
         self.flipped_cards.append(card_postion)
         return True
     
-    def is_position_valid(self, card_postion:tuple):
+    def is_position_valid(self, card_postion:tuple) -> bool:
         """Check if coordinates is a cell on the board"""
         row, col = card_postion
         if row < 0 or row >= self.rows:
@@ -121,26 +121,34 @@ class GameBoard:
             return False
         return True
 
-    def is_card_already_matched(self, card_postion:tuple):
+    def is_card_already_matched(self, card_postion:tuple) -> bool:
         """Check if Card at position is already matched"""
         row, col = card_postion
         return self.board[row][col].is_matched
     
-    def is_card_already_flipped(self, card_postion:tuple):
+    def is_card_already_flipped(self, card_postion:tuple) -> bool:
         """Check if Card at position is already flipped"""
         row, col = card_postion
         return self.board[row][col].is_flipped
     
-    def prepare_next_round(self):
-        """Iterate through board and sets all cards to: is_flipped = False"""
+    def prepare_next_round(self) -> None:
+        """Prepare new round by clearing flipped_cards and set all cards to unflipped"""
         self.flipped_cards = []
         for row in self.board:
             for card in row:
                 card.is_flipped = False
     
-    def check_match(self):
-        """ Takes the two latest saved card positions in flipped_cards[]
-            to see if the id is equal. If equal, then it is a match."""
+    def check_match(self) -> bool:
+        """ 
+        Check if the two last flipped card is a pair.
+        
+        Uses the last two coordinate cuple saved in flipped_card list and check
+        if the Cards in these cells is a pair. If it's a match the two cards is 
+        set to matched.
+        
+        Returns:
+            bool: True if it's a match, else False
+        """
         row1, col1 = self.flipped_cards[-2]
         row2, col2 = self.flipped_cards[-1]
         
@@ -148,15 +156,19 @@ class GameBoard:
         card2 = self.board[row2][col2]
         
         if card1.id == card2.id:
-            self.set_card_to_is_matched(card1)
-            self.set_card_to_is_matched(card2)
+            card1.set_is_matched()
+            card2.set_is_matched()
             return True
         return False
 
-    def set_card_to_is_matched(self, card:Card):
-        card.is_matched = True
 
     def to_dict(self) -> dict:
+        """
+        Return all necessary game information about the board as a dictionary.
+
+        Returns: 
+            dict: all board data required to later restore the board state from JSON.
+        """
         return {
                 "board": [
                     [{"id": card.id, 

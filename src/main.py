@@ -83,8 +83,14 @@ def add_players() -> list:
             print("Enter name of players")
             players = []
             for i in range(nbr_of_players):
-                player = Player(input(f"Player {i+1}: ").strip().title())
-                players.append(player)
+                while True:
+                    try:
+                        player = Player(input(f"Player {i+1}: ").strip().title())
+                    except ValueError as e:
+                        print(f"Error: {e}")
+                    else: 
+                        players.append(player)
+                        break
             return players
 
 def choose_board_size() -> tuple:
@@ -149,10 +155,10 @@ def run_game(game:MemoryGame) -> None:
             print(f"Error: {e}")
             time.sleep(1.5)
 
-
         if game.flipps_in_round < 2:
             continue
         
+        clear_screen()
         print()
         game.print_board()
         try:
@@ -171,7 +177,8 @@ def run_game(game:MemoryGame) -> None:
             print(f"Found pairs: {player.nbr_of_matches}")
         else:  
             print(f"{player.name}: {player.nbr_of_matches} pairs right now")
-        print("-" * 30)        
+        print("-" * 30)
+        print()    
 
         time.sleep(2.5)
     end_game(game)
@@ -211,7 +218,7 @@ def end_game(game: MemoryGame) -> None:
     if game.is_finished():
         if len(game.players) == 1:
             if update_toplist(game):
-                print("Check the highscore to see if you made the list!")
+                print("***Check the highscore to see if you made the list!***")
         game.print_summary()
     else:
         while True:
@@ -228,6 +235,7 @@ def end_game(game: MemoryGame) -> None:
                 print("Invalid choice, please enter 'YES' or 'NO'")
 
 def update_toplist(game: MemoryGame) -> bool:
+    ### FEL LÖSER IMORGON ###
     """
     Update toplist if it's a finished single-player game
 
@@ -245,8 +253,6 @@ def update_toplist(game: MemoryGame) -> bool:
     
     toplist = read_db("TOPLIST")
 
-    nbr_of_flipps = game.players[0].nbr_of_flipps
-    player_name = game.players[0].name
     match game.size:
         case (2, 3):
             level = "easy"
@@ -256,18 +262,23 @@ def update_toplist(game: MemoryGame) -> bool:
             level = "hard"
         case (5, 6):
             level = "extreme"
-
-    min_heap = toplist[level]
-    heapq.heapify(min_heap)
-
-    if len(min_heap) < 3:
-        heapq.heappush(min_heap, (nbr_of_flipps, player_name))
-    else:
-        if nbr_of_flipps < min_heap[0][0]:
-            heapq.heappop(min_heap)
-            heapq.heappush(min_heap, (nbr_of_flipps, player_name))
     
-    toplist[level] = min_heap
+    nbr_of_flipps = game.players[0].nbr_of_flipps * -1
+    player_name = game.players[0].name
+
+    max_heap = [-n for n in toplist[level]]
+    heapq.heapify(max_heap)
+
+    if len(max_heap) < 3:
+        heapq.heappush(max_heap, [nbr_of_flipps, player_name])
+    else:
+        if nbr_of_flipps > max_heap[0][0]:
+            heapq.heappop(max_heap)
+            heapq.heappush(max_heap, [nbr_of_flipps, player_name])
+    
+    toplist[level] = max_heap
+    toplist[level] = [[f * -1 for f in p[0]] for p in toplist[level]]
+    
     write_db(toplist, "TOPLIST")
     return True
 

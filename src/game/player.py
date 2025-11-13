@@ -1,6 +1,8 @@
 class Player:
     def __init__(self, name):
-        self.name = name #Något som stoppar den från att vara en tom sträng?
+        if not name.strip():
+            raise ValueError("Name can't be empty")
+        self.name = name
         self.nbr_of_matches = 0
         self.nbr_of_flipps = 0
 
@@ -11,6 +13,12 @@ class Player:
         self.nbr_of_flipps += 1
 
     def to_dict(self):
+        """
+        Return all necessary information about the player as a dictionary.
+
+        Returns: 
+            dict: all board data required to later restore the board state from JSON.
+        """
         return {"name": self.name,
                 "nbr_of_matches": self.nbr_of_matches, 
                 "nbr_of_flipps": self.nbr_of_flipps}
