@@ -1,6 +1,6 @@
 class Player:
     def __init__(self, name):
-        self.name = name
+        self.name = name #Något som stoppar den från att vara en tom sträng?
         self.nbr_of_matches = 0
         self.nbr_of_flipps = 0
 
