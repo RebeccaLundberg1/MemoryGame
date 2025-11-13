@@ -6,11 +6,16 @@ class GameBoard:
     def __init__(self, size:tuple):
         self.rows, self.columns = size
         self.board = [[None for _ in range(self.columns)] for _ in range(self.rows)]
-        self.flipped_cards = [] #Till en kölista? så man lägger till och tar bort en för att bara spara två samtidigt?
+        self.flipped_cards = []
         self.setup_board()
 
-    def setup_board(self):
-        """create list of cards, shuffle cards and add them to board"""
+    def setup_board(self) -> None:
+        """
+        Update all cells in board with a Card objects
+        
+        Creates two identical lists with Card objects, merges them into one, 
+        shuffle the list, and then assign the Card objects to board cells one by one.
+        """
         cards = []
         cards_dubblets = []
         image = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O"] #Detta borde kanske vara en lista av bilder någon annanstans som importeras, och kanske att det ska vara längre? 
@@ -26,18 +31,39 @@ class GameBoard:
                 self.board[row][column] = cards[index]
                 index += 1
 
-    def update_board(self, latest_board_status):
+    def update_board(self, latest_board_status) -> None:
+        """ 
+        Update board status from JSON 
+        
+        Restore card status, and add latest flipped card to list if there is one.
+        
+        Args:
+            latest_board_status, expetcted keys:
+                'last_card_flipped': tuple(row, col)
+                'board':{
+                    'id': int
+                    'image': str
+                    'matched': bool
+                    'flipped': bool
+                    }
+        """
+        if latest_board_status["last_card_flipped"]:
+            self.flipped_cards.append(latest_board_status["last_card_flipped"])
+
         for r in range(self.rows):
             for c in range(self.columns):
-                card_status = latest_board_status[r][c]
+                card_status = latest_board_status["board"][r][c]
                 self.board[r][c].id = card_status["id"]
                 self.board[r][c].image = card_status["image"]
                 self.board[r][c].is_matched = card_status["matched"]
                 self.board[r][c].is_flipped = card_status["flipped"]
         
-    def print_board(self):
-        """ Prints the board with a top and left row/colmun with index numbers for
-            a more playerfriendly look"""
+    def print_board(self) -> None:
+        """ 
+        Print the game board with row and column indices.
+
+        If card is matched or flipped the image will be shown, else [ ]  
+        """
         for i in range(self.columns + 1):
             print(f"{i:^5}", end="")
         print()
@@ -52,17 +78,26 @@ class GameBoard:
                     print()
 
     def all_cards_matched(self) -> bool:
-        """ iterate through cards in board to see if all card is matched
-            return true if all cards is matched, else return false"""
+        """Check if all cards in board is matched"""
         for row in self.board:
             for card in row:
                 if not card.is_matched:
                     return False
         return True
 
-    def flip_card(self, card_postion:tuple):
-        """ first verify that card that is flipping is a valid card to flip 
-            (not already matched or flipped), then flip card and return True """
+    def flip_card(self, card_postion:tuple) -> bool:
+        """ 
+        Flip card if card_position is valid
+
+        Check if coordinates in card_position is on the board, not already
+        matched or flipped. Then flipps the card and add the coordinates to
+        flipped_card list. 
+
+        Raises:
+            PositionIsIncorrect if position is outside the board
+            CardAlreadyMatchedError if position is already a matched card
+            CardAlreadyFlippedError if position is already a flipped card
+        """
         if not self.is_position_valid(card_postion):
             raise PositionIsIncorrect("You entered a position outside the board")
         
@@ -78,7 +113,7 @@ class GameBoard:
         return True
     
     def is_position_valid(self, card_postion:tuple):
-        """Check if position is on the board, """
+        """Check if coordinates is a cell on the board"""
         row, col = card_postion
         if row < 0 or row >= self.rows:
             return False
@@ -87,17 +122,18 @@ class GameBoard:
         return True
 
     def is_card_already_matched(self, card_postion:tuple):
-        """Check if card in position is already matched"""
+        """Check if Card at position is already matched"""
         row, col = card_postion
         return self.board[row][col].is_matched
     
     def is_card_already_flipped(self, card_postion:tuple):
-        """Check if card in position is already flipped"""
+        """Check if Card at position is already flipped"""
         row, col = card_postion
         return self.board[row][col].is_flipped
     
-    def set_cards_to_not_flipped(self):
+    def prepare_next_round(self):
         """Iterate through board and sets all cards to: is_flipped = False"""
+        self.flipped_cards = []
         for row in self.board:
             for card in row:
                 card.is_flipped = False
@@ -120,11 +156,14 @@ class GameBoard:
     def set_card_to_is_matched(self, card:Card):
         card.is_matched = True
 
-    def to_list(self):
-        return [
-                [{"id": card.id, 
-                  "image": card.image, 
-                  "matched": card.is_matched, 
-                  "flipped": card.is_flipped} 
-                for card in row] 
-               for row in self.board]
+    def to_dict(self) -> dict:
+        return {
+                "board": [
+                    [{"id": card.id, 
+                    "image": card.image,
+                    "matched": card.is_matched, 
+                    "flipped": card.is_flipped} 
+                    for card in row] 
+                for row in self.board],
+                "last_card_flipped": self.flipped_cards[-1] 
+                }

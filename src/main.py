@@ -35,7 +35,7 @@ def start_menu() -> None:
 
             case "2":
                 saved_game = read_db("SAVE")
-                if saved_game is not None:
+                if saved_game:
                     game = MemoryGame(saved_game["size"])
                     game.update_latest_game(saved_game)
                     players_in_game = " & ".join([p.name for p in game.players])
@@ -126,6 +126,10 @@ def run_game(game:MemoryGame) -> None:
     Args:
         game(MemoryGame): a MemoryGame object
     """
+    if not game.is_game_ready_to_start:
+        print("You can't start a game without players")
+        return
+
     while not game.is_finished():
         clear_screen()
         lable = "first" if game.flipps_in_round == 0 else "second"
