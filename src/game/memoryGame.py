@@ -29,6 +29,8 @@ def update_latest_game(saved_game: dict) -> MemoryGame:
 
 class MemoryGame:
     def __init__(self, size:tuple, players:list[Player]):
+        if not players or not all(isinstance(p, Player) for p in players):
+            raise ValueError("You can't create a game without players")
         self.players = players
         self.size = size
         self.game = GameBoard(size)

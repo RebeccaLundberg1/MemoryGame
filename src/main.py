@@ -4,7 +4,7 @@ import time
 from game.player import Player
 from game.exceptions import GameError, NotAbleToMatchError
 import os
-from services.file_service import FileType, read_db, write_db
+from services.file_service import FileType, read_json, write_json
 
 def main():
     start_menu()
@@ -30,13 +30,21 @@ def start_menu() -> None:
                 players = add_players()
                 print()
                 size = choose_board_size()
-                game = MemoryGame(size, players)
+                try:
+                    game = MemoryGame(size, players)
+                except ValueError as e:
+                    print(f"Error: {e}")
+                    continue
                 run_game(game)
 
             case "2":
-                saved_game = read_db(FileType.SAVE)
+                saved_game = read_json(FileType.SAVE)
                 if saved_game:
-                    game = update_latest_game(saved_game)
+                    try:
+                        game = update_latest_game(saved_game)
+                    except ValueError as e:
+                        print(f"Error: {e}")
+                        continue
                     players_in_game = " & ".join([p.name for p in game.players])
                     clear_screen()
                     print(f"Welcome back {players_in_game}!")
@@ -47,7 +55,7 @@ def start_menu() -> None:
                     continue
 
             case "3":
-                toplist = read_db(FileType.TOPLIST)
+                toplist = read_json(FileType.TOPLIST)
                 for key in toplist:
                     print(f"{key}: ")
                     for i, (flipps, player) in enumerate(sorted(toplist[key], reverse=False), start = 1):
@@ -220,7 +228,7 @@ def end_game(game: MemoryGame) -> None:
             save = input("The game is unfinished, would you like to save "  
                          "it for next time (YES/NO)?: ").strip().upper()
             if save == "YES":
-                write_db(game.to_dict(), FileType.SAVE)
+                write_json(game.to_dict(), FileType.SAVE)
                 print("The game is saved, welcome back!")
                 break
             elif save == "NO":
@@ -245,7 +253,7 @@ def update_toplist(game: MemoryGame) -> bool:
     if len(game.players) != 1:
         return False
     
-    toplist = read_db(FileType.TOPLIST)
+    toplist = read_json(FileType.TOPLIST)
 
     match game.size:
         case (2, 3):
@@ -265,7 +273,7 @@ def update_toplist(game: MemoryGame) -> bool:
     current_toplist.sort()
     toplist[level] = current_toplist[:3]
         
-    write_db(toplist, FileType.TOPLIST)
+    write_json(toplist, FileType.TOPLIST)
     return True
 
 def clear_screen():

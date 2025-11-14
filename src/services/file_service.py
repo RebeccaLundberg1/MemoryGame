@@ -15,7 +15,7 @@ TOPLIST_PATH = DATA_DIR / "toplist.json"
 
 DATA_DIR.mkdir(parents=True, exist_ok=True)
 
-def read_db(filetype: str) -> dict:
+def read_json(filetype: str) -> dict:
     """Read JSON database. Returns empty list if file doesn't exist or är invalid."""
     if filetype != FileType.SAVE and filetype != FileType.TOPLIST:
         raise ValueError(f"Invalid filetype: {filetype}. Must be {FileType.SAVE} or {FileType.TOPLIST}.")
@@ -32,7 +32,7 @@ def read_db(filetype: str) -> dict:
     except (json.JSONDecodeError, IOError):
         return {}
 
-def write_db(items: dict, filetype: str) -> None:
+def write_json(items: dict, filetype: str) -> None:
     """Write items to JSON database."""
     if filetype != FileType.SAVE and filetype != FileType.TOPLIST:
         raise ValueError (f"Invalid filetype: {filetype}. Must be {FileType.SAVE} or {FileType.TOPLIST}.")

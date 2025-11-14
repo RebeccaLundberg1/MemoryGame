@@ -11,7 +11,7 @@ def update_players(players_info: list):
 
 
 class Player:
-    def __init__(self, name):
+    def __init__(self, name: str):
         if not name.strip():
             raise ValueError("Name can't be empty")
         self.name = name
