@@ -10,10 +10,6 @@ def memory_game():
     game = MemoryGame((5,6), players)
     return game
 
-def test_start_game_without_players(memory_game):
-    memory_game.players = []
-    assert not memory_game.is_game_ready_to_start()
-
 @pytest.mark.parametrize("cell, should_raise", [
     ((0, 0), False),
     ((8, 8), True)

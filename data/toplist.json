@@ -1,0 +1,58 @@
+{
+    "easy": [
+        [
+            3,
+            "Rebecca"
+        ],
+        [
+            8,
+            "Stina"
+        ],
+        [
+            9,
+            "Lennart"
+        ]
+    ],
+    "medium": [
+        [
+            15,
+            "Jonas"
+        ],
+        [
+            18,
+            "Clara"
+        ],
+        [
+            20,
+            "Felix"
+        ]
+    ],
+    "hard": [
+        [
+            25,
+            "Nora"
+        ],
+        [
+            27,
+            "Erik"
+        ],
+        [
+            30,
+            "Alice"
+        ]
+    ],
+    "extreme": [
+        [
+            35,
+            "Leon"
+        ],
+        [
+            38,
+            "Rebecca"
+        ],
+        [
+            40,
+            "Emelie"
+        ]
+    ]
+}

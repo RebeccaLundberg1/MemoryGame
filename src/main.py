@@ -1,10 +1,10 @@
 import heapq
-from game.memoryGame import MemoryGame
+from game.memoryGame import MemoryGame, update_latest_game
 import time
 from game.player import Player
 from game.exceptions import GameError, NotAbleToMatchError
 import os
-from services.file_service import read_db, write_db
+from services.file_service import FileType, read_db, write_db
 
 def main():
     start_menu()
@@ -34,10 +34,9 @@ def start_menu() -> None:
                 run_game(game)
 
             case "2":
-                saved_game = read_db("SAVE")
+                saved_game = read_db(FileType.SAVE)
                 if saved_game:
-                    game = MemoryGame(saved_game["size"])
-                    game.update_latest_game(saved_game)
+                    game = update_latest_game(saved_game)
                     players_in_game = " & ".join([p.name for p in game.players])
                     clear_screen()
                     print(f"Welcome back {players_in_game}!")
@@ -48,7 +47,7 @@ def start_menu() -> None:
                     continue
 
             case "3":
-                toplist = read_db("TOPLIST")
+                toplist = read_db(FileType.TOPLIST)
                 for key in toplist:
                     print(f"{key}: ")
                     for i, (flipps, player) in enumerate(sorted(toplist[key], reverse=False), start = 1):
@@ -73,7 +72,7 @@ def add_players() -> list:
     while True:
         try:
             nbr_of_players = int(input("Number of players, 1-4?: "))
-            if nbr_of_players < 0 or nbr_of_players > 4:
+            if not (1 <= nbr_of_players <= 4):
                 print("1-4 players is allowed, please enter a valid number")
                 continue
         except ValueError:
@@ -132,10 +131,6 @@ def run_game(game:MemoryGame) -> None:
     Args:
         game(MemoryGame): a MemoryGame object
     """
-    if not game.is_game_ready_to_start:
-        print("You can't start a game without players")
-        return
-
     while not game.is_finished():
         clear_screen()
         lable = "first" if game.flipps_in_round == 0 else "second"
@@ -225,7 +220,7 @@ def end_game(game: MemoryGame) -> None:
             save = input("The game is unfinished, would you like to save "  
                          "it for next time (YES/NO)?: ").strip().upper()
             if save == "YES":
-                write_db(game.to_dict, "SAVE")
+                write_db(game.to_dict(), FileType.SAVE)
                 print("The game is saved, welcome back!")
                 break
             elif save == "NO":
@@ -235,7 +230,6 @@ def end_game(game: MemoryGame) -> None:
                 print("Invalid choice, please enter 'YES' or 'NO'")
 
 def update_toplist(game: MemoryGame) -> bool:
-    ### FEL LÖSER IMORGON ###
     """
     Update toplist if it's a finished single-player game
 
@@ -251,7 +245,7 @@ def update_toplist(game: MemoryGame) -> bool:
     if len(game.players) != 1:
         return False
     
-    toplist = read_db("TOPLIST")
+    toplist = read_db(FileType.TOPLIST)
 
     match game.size:
         case (2, 3):
@@ -263,23 +257,15 @@ def update_toplist(game: MemoryGame) -> bool:
         case (5, 6):
             level = "extreme"
     
-    nbr_of_flipps = game.players[0].nbr_of_flipps * -1
+    current_toplist = toplist[level]
+    nbr_of_flipps = game.players[0].nbr_of_flipps
     player_name = game.players[0].name
 
-    max_heap = [-n for n in toplist[level]]
-    heapq.heapify(max_heap)
-
-    if len(max_heap) < 3:
-        heapq.heappush(max_heap, [nbr_of_flipps, player_name])
-    else:
-        if nbr_of_flipps > max_heap[0][0]:
-            heapq.heappop(max_heap)
-            heapq.heappush(max_heap, [nbr_of_flipps, player_name])
-    
-    toplist[level] = max_heap
-    toplist[level] = [[f * -1 for f in p[0]] for p in toplist[level]]
-    
-    write_db(toplist, "TOPLIST")
+    current_toplist.append([nbr_of_flipps, player_name])
+    current_toplist.sort()
+    toplist[level] = current_toplist[:3]
+        
+    write_db(toplist, FileType.TOPLIST)
     return True
 
 def clear_screen():

@@ -1,5 +1,8 @@
+#List of all images witch are used as Card-images
+card_images = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O"]
+
 class Card:
-    def __init__(self, id: int, image, ):
+    def __init__(self, id: int, image):
         self.id = id
         self.image = image
         self.is_flipped = False

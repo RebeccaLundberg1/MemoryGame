@@ -1,4 +1,4 @@
-from .card import Card
+from .card import Card, card_images
 from .exceptions import PositionIsIncorrect, CardAlreadyFlippedError, CardAlreadyMatchedError
 import random
 
@@ -18,10 +18,9 @@ class GameBoard:
         """
         cards = []
         cards_dubblets = []
-        image = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O"] #Emojis? Detta borde kanske vara en lista av bilder någon annanstans som importeras, och kanske att det ska vara längre? 
         for i in range((self.rows * self.columns) // 2):
-            cards.append(Card(i, image[i]))
-            cards_dubblets.append(Card(i, image[i]))
+            cards.append(Card(i, card_images[i]))
+            cards_dubblets.append(Card(i, card_images[i]))
         cards = cards + cards_dubblets
         random.shuffle(cards)
 
@@ -31,7 +30,7 @@ class GameBoard:
                 self.board[row][column] = cards[index]
                 index += 1
 
-    def update_board(self, latest_board_status) -> None:
+    def update_board(self, update_board_status:dict) -> None:
         """ 
         Update board status from JSON 
         
@@ -47,12 +46,12 @@ class GameBoard:
                     'flipped': bool
                     }
         """
-        if latest_board_status["last_card_flipped"]:
-            self.flipped_cards.append(latest_board_status["last_card_flipped"])
+        if update_board_status["last_card_flipped"]:
+            self.flipped_cards.append(update_board_status["last_card_flipped"])
 
         for r in range(self.rows):
             for c in range(self.columns):
-                card_status = latest_board_status["board"][r][c]
+                card_status = update_board_status["board"][r][c]
                 self.board[r][c].id = card_status["id"]
                 self.board[r][c].image = card_status["image"]
                 self.board[r][c].is_matched = card_status["matched"]
@@ -85,7 +84,7 @@ class GameBoard:
                     return False
         return True
 
-    def flip_card(self, card_postion:tuple) -> bool:
+    def flip_card(self, card_postion:tuple) -> None:
         """ 
         Flip card if card_position is valid
 
@@ -110,16 +109,11 @@ class GameBoard:
         row, column = card_postion
         self.board[row][column].flip_card()
         self.flipped_cards.append(card_postion)
-        return True
     
     def is_position_valid(self, card_postion:tuple) -> bool:
         """Check if coordinates is a cell on the board"""
         row, col = card_postion
-        if row < 0 or row >= self.rows:
-            return False
-        elif col < 0 or col >= self.columns:
-            return False
-        return True
+        return 0 <= row < self.rows and 0 <= col < self.columns
 
     def is_card_already_matched(self, card_postion:tuple) -> bool:
         """Check if Card at position is already matched"""
@@ -177,5 +171,5 @@ class GameBoard:
                     "flipped": card.is_flipped} 
                     for card in row] 
                 for row in self.board],
-                "last_card_flipped": self.flipped_cards[-1] 
+                "last_card_flipped": self.flipped_cards[-1] if self.flipped_cards else []
                 }

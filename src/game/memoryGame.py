@@ -1,47 +1,40 @@
 from .gameBoard import GameBoard
 from .exceptions import NotAbleToMatchError
-from .player import Player
+from .player import Player, update_players
+
+def update_latest_game(saved_game: dict) -> MemoryGame:
+    """ 
+    Update game status from JSON
+    
+    Reconstruct players, restore board and update the game status such as 
+    current player and flipps in round.
+    
+    Args:
+        dict, expetcted keys:
+            'players'
+            'size'
+            'board'
+            'current_player'
+            'flipps_in_round'
+
+    Returns: 
+        MemoryGame: The MemoryGame created and updated 
+    """  
+    players = update_players(saved_game["players"])
+    game = MemoryGame(saved_game["size"], players)
+    game.game.update_board(saved_game["board"])
+    game.current_player = saved_game["current_player"]
+    game.flipps_in_round = saved_game["flipps_in_round"]
+    return game
 
 class MemoryGame:
-    def __init__(self, size:tuple, players:list[Player] = None):
-        if players == None:
-            players = []
+    def __init__(self, size:tuple, players:list[Player]):
         self.players = players
         self.size = size
         self.game = GameBoard(size)
         self.current_player = 0
         self.flipps_in_round = 0
-
-    def is_game_ready_to_start(self) -> bool:
-        """ Check if there is players added to the game """
-        return bool(self.players)
     
-    def update_latest_game(self, dict) -> None:
-        """ 
-        Update game status from JSON
-        
-        Reconstruct players, restore board and update the gama status such as 
-        current player and flipps in round.
-        
-        Args:
-            dict, expetcted keys:
-                'players'
-                'board'
-                'current_player'
-                'flipps_in_round' 
-        """
-        for p in dict["players"]:
-            player = Player(p["name"])
-            player.nbr_of_matches = p["nbr_of_matches"]
-            player.nbr_of_flipps = p["nbr_of_flipps"]
-            self.players.append(player)
-            ### Ska detta kanske ligga hos en player
-        
-        self.game.update_board(dict["board"])
-
-        self.current_player = dict["current_player"]
-        self.flipps_in_round = dict["flipps_in_round"]
-
     def is_finished(self) -> bool:
         """Check if the game is finished."""
         return self.game.all_cards_matched()
@@ -73,13 +66,13 @@ class MemoryGame:
         """
         Try flip a card at the given position.
 
-        If the flip is successful, increments 'flipps_in_round' by 1.
+        If flip_card dosn't throw exception, increments 'flipps_in_round' by 1.
 
         Args:
             card_position(tuple): The cell coordinates (row, column) of the card to flip.
         """
-        if self.game.flip_card(card_postion):
-            self.flipps_in_round += 1
+        self.game.flip_card(card_postion)
+        self.flipps_in_round += 1
 
     def try_match(self) -> bool:
         """

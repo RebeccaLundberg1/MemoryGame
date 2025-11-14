@@ -1,3 +1,15 @@
+def update_players(players_info: list):
+    """" Reconstruct players from saved game """
+    players = []
+    for p in players_info:
+        player = Player(p["name"])
+        player.nbr_of_matches = p["nbr_of_matches"]
+        player.nbr_of_flipps = p["nbr_of_flipps"]
+        players.append(player)
+    
+    return players
+
+
 class Player:
     def __init__(self, name):
         if not name.strip():

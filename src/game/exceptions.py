@@ -1,5 +1,5 @@
 class GameError(Exception):
-    pass 
+    pass
 
 class NotAbleToMatchError(GameError):
     pass
