@@ -1,14 +1,4 @@
-<head>
-    <style>
-        .container {
-            max-width: 820px;
-            margin: 0 auto
-            padding: 10px;
-        }
-    </style>
-</head>
-
-<div class="container">
+<div style="max-width:820px; margin:0 auto; padding:10px;">
 
 # MemoryGame - Python Projekt
 **Rebecca Lundberg** *- Programmering i Python - Jensen YH Malmö - 14 november 2025*
